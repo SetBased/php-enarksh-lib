@@ -13,14 +13,15 @@ namespace SetBased\Enarksh\XmlGenerator\Resource;
 //----------------------------------------------------------------------------------------------------------------------
 /** @brief Class for generating XML messages for elements of type 'CountingResourceType'.
  */
-class ENK_XmlGeneratorCountingResource extends Resource
+class CountingResource extends Resource
 {
   /** The amount available of this resource.
    */
   private $myAmount;
 
   //--------------------------------------------------------------------------------------------------------------------
-  /** Creates an ENK_XmlGeneratorCountingResource object.
+  /**
+   * Object constructor.
    *
    * @param string $theName   The name of the resource.
    * @param string $theAmount The amount available of this resource..

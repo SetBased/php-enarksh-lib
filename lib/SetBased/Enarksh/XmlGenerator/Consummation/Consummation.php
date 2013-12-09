@@ -28,7 +28,7 @@ abstract class Consummation
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Creates an ENK_XmlGeneratorConsummation object.
+   * Object constructor.
    *
    * @param string $theName The name of the consummation.
    */

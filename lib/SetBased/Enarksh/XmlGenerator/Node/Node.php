@@ -11,10 +11,37 @@
 namespace SetBased\Enarksh\XmlGenerator\Node;
 
 //----------------------------------------------------------------------------------------------------------------------
+use SetBased\Enarksh\XmlGenerator\Port\Port;
+
+function enk_assert_failed()
+{
+  $args    = func_get_args();
+  $format  = array_shift( $args );
+  $message = vsprintf( $format, $args );
+
+  throw new \Exception($message);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 /** @brief Class for generating XML messages for elements of type 'NodeType'.
  */
 class Node
 {
+  /**
+   * Token for "all" input or output ports on a node.
+   */
+  const ALL_PORT_NAME = 'all';
+
+  /**
+   * Token for node self.
+   */
+  const NODE_SELF_NAME = '.';
+
+  /**
+   * Token for all child nodes.
+   */
+  const NODE_ALL_NAME = '*';
+
   /**
    * The name of this node.
    *
@@ -70,7 +97,8 @@ class Node
   private $myResources = array();
 
   //--------------------------------------------------------------------------------------------------------------------
-  /** Creates an ENK_XmlGeneratorNodeType object.
+  /**
+   * Object constructor.
    *
    * @param string $theName The name of the node.
    */
@@ -117,10 +145,10 @@ class Node
                                  $thePredecessorNodeName,
                                  $thePredecessorPortName )
   {
-    if ($thePredecessorPortName==='') $thePredecessorPortName = ENK_ALL_PORT_NAME;
-    if ($theSuccessorPortName==='') $theSuccessorPortName = ENK_ALL_PORT_NAME;
+    if ($thePredecessorPortName==='') $thePredecessorPortName = self::ALL_PORT_NAME;
+    if ($theSuccessorPortName==='') $theSuccessorPortName = self::ALL_PORT_NAME;
 
-    if ($theSuccessorNodeName==ENK_NODE_SELF_NAME)
+    if ($theSuccessorNodeName==self::NODE_SELF_NAME)
     {
       $succ_port = $this->getOutputPort( $theSuccessorPortName );
     }
@@ -149,11 +177,11 @@ class Node
    */
   public function addDependencyAllInputPorts()
   {
-    $parent_port = $this->getInputPort( ENK_ALL_PORT_NAME );
+    $parent_port = $this->getInputPort( self::ALL_PORT_NAME );
 
     foreach ($this->myNodes as $node)
     {
-      $child_port = $node->getInputPort( ENK_ALL_PORT_NAME );
+      $child_port = $node->getInputPort( self::ALL_PORT_NAME );
       $child_port->addDependency( $parent_port );
     }
   }
@@ -164,11 +192,11 @@ class Node
    */
   public function addDependencyAllOutputPorts()
   {
-    $parent_port = $this->getOutputPort( ENK_ALL_PORT_NAME );
+    $parent_port = $this->getOutputPort( self::ALL_PORT_NAME );
 
     foreach ($this->myNodes as $node)
     {
-      $child_port = $node->getOutputPort( ENK_ALL_PORT_NAME );
+      $child_port = $node->getOutputPort( self::ALL_PORT_NAME );
       $parent_port->addDependency( $child_port );
     }
   }
@@ -311,10 +339,12 @@ class Node
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * Returns input port with @a $theName. If no input port with @a $theName exists an exception is thrown.
+
    *
-   * @param string $theName
+*@param string $theName
+
    *
-   * @return null|\SetBased\Enarksh\XmlGenerator\Port\InputPort|\SetBased\Enarksh\XmlGenerator\Port\Port
+*@return null|\SetBased\Enarksh\XmlGenerator\Port\InputPort|Port
    */
   public function getInputPort( $theName )
   {
@@ -322,7 +352,7 @@ class Node
 
     if ($ret===null)
     {
-      if ($theName==ENK_ALL_PORT_NAME)
+      if ($theName==self::ALL_PORT_NAME)
       {
         $ret = $this->MakeInputPort( $theName );
       }
@@ -352,7 +382,7 @@ class Node
    *
    * @param string $theName
    *
-   * @return null|\SetBased\Enarksh\XmlGenerator\Port\OutputPort|\SetBased\Enarksh\XmlGenerator\Port\Port
+   * @return null|\SetBased\Enarksh\XmlGenerator\Port\OutputPort|Port
    */
   public function getOutputPort( $theName )
   {
@@ -360,7 +390,7 @@ class Node
 
     if ($ret===null)
     {
-      if ($theName==ENK_ALL_PORT_NAME)
+      if ($theName==self::ALL_PORT_NAME)
       {
         $ret = $this->makeOutputPort( $theName );
       }
@@ -413,13 +443,13 @@ class Node
    *
    * @param string $theName
    *
-   * @return \SetBased\Enarksh\XmlGenerator\Port\Port
+   * @return Port
    */
   public function makeInputPort( $theName )
   {
     // @todo test port already exists.
 
-    $port                 = new \SetBased\Enarksh\XmlGenerator\Port\Port($this, $theName);
+    $port                 = new Port($this, $theName);
     $this->myInputPorts[] = $port;
 
     return $port;
@@ -431,13 +461,13 @@ class Node
    *
    * @param string $theName
    *
-   * @return \SetBased\Enarksh\XmlGenerator\Port\Port
+   * @return Port
    */
   public function makeOutputPort( $theName )
   {
     // @todo test port already exists.
 
-    $port                  = new \SetBased\Enarksh\XmlGenerator\Port\Port($this, $theName);
+    $port                  = new Port($this, $theName);
     $this->myOutputPorts[] = $port;
 
     return $port;

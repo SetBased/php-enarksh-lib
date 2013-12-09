@@ -28,7 +28,8 @@ class CountingConsummation extends Consummation
   private $myAmount;
 
   //--------------------------------------------------------------------------------------------------------------------
-  /** Creates an ENK_XmlGeneratorCountingConsummation object.
+  /**
+   * Object constructor.
    *
    * @param string $theName   The name of the consummation.
    * @param int    $theAmount The amount consumed.

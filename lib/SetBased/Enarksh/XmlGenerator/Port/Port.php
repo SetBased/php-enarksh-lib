@@ -10,11 +10,13 @@
 //----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Port;
 
+use SetBased\Enarksh\XmlGenerator\Node\Node;
+
 //----------------------------------------------------------------------------------------------------------------------
-  /** @brief Class for generating XML messages for elements of type 'InputPortType' and 'OutputPortType'.
-   */
 /**
  * Class Port
+ *
+ * Class for generating XML messages for elements of type 'InputPortType' and 'OutputPortType'.
  *
  * @package SetBased\Enarksh\XmlGenerator\Port
  */
@@ -23,7 +25,7 @@ class Port
   /**
    * The node of which this port is a port.
    *
-   * @var \SetBased\Enarksh\XmlGenerator\Node\Node
+   * @var Node
    */
   protected $myNode;
 
@@ -226,12 +228,12 @@ class Port
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * @param \XmlWriter                               $theXmlWriter
-   * @param \SetBased\Enarksh\XmlGenerator\Node\Node $theParentNode
+   * @param Node $theParentNode
    */
   private function generateXmlDependant( $theXmlWriter, $theParentNode )
   {
     $theXmlWriter->startElement( 'NodeName' );
-    $theXmlWriter->text( ($this->myNode===$theParentNode) ? ENK_NODE_SELF_NAME : $this->myNode->getName() );
+    $theXmlWriter->text( ($this->myNode===$theParentNode) ? Node::NODE_SELF_NAME : $this->myNode->getName() );
     $theXmlWriter->endElement();
 
     $theXmlWriter->startElement( 'PortName' );

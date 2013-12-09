@@ -28,7 +28,8 @@ class ReadWriteLockConsummation extends Consummation
   private $myMode;
 
   //--------------------------------------------------------------------------------------------------------------------
-  /** Creates an ENK_XmlGeneratorReadWriteConsummation object.
+  /**
+   * Object constructor.
    *
    * @param string $theName The name of the consummation.
    * @param string $theMode The mode of the consummation.

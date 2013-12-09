@@ -63,7 +63,7 @@ class CommandJobNode extends Node
   {
     /** @todo validate node has only one input and one output port */
 
-    $port = $this->getInputPort( ENK_ALL_PORT_NAME );
+    $port = $this->getInputPort( self::ALL_PORT_NAME );
 
     return $port->getDependenciesPaths( $theRecursiveFlag );
   }

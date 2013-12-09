@@ -24,7 +24,7 @@ abstract class Resource
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Creates an ENK_XmlGeneratorResource object.
+   * Object constructor.
    *
    * @param string $theName The name of the resource.
    */
