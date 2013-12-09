@@ -147,7 +147,7 @@ class Node
   /**
    * Add dependencies between the 'all' input port of this node and the 'all' input port of all this child nodes.
    */
-  public function addDependicyAllInputPorts()
+  public function addDependencyAllInputPorts()
   {
     $parent_port = $this->getInputPort( ENK_ALL_PORT_NAME );
 
@@ -162,7 +162,7 @@ class Node
   /**
    * Add dependencies between the 'all' output port of this node and the 'all' output of all this child nodes.
    */
-  public function addDependicyAllOutputPorts()
+  public function addDependencyAllOutputPorts()
   {
     $parent_port = $this->getOutputPort( ENK_ALL_PORT_NAME );
 
