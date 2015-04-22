@@ -16,6 +16,14 @@ namespace SetBased\Enarksh\XmlGenerator\Node;
 class ScheduleNode extends Node
 {
   //--------------------------------------------------------------------------------------------------------------------
+  protected function ensureDependencies()
+  {
+    foreach ($this->myNodes as $node)
+    {
+      $node->ensureDependencies();
+    }
+  }
+
   //--------------------------------------------------------------------------------------------------------------------
 }
 

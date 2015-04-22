@@ -10,16 +10,18 @@
 //----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Node;
 
-//----------------------------------------------------------------------------------------------------------------------
+use SetBased\Enarksh\XmlGenerator\Port\InputPort;
+use SetBased\Enarksh\XmlGenerator\Port\OutputPort;
 use SetBased\Enarksh\XmlGenerator\Port\Port;
 
+//----------------------------------------------------------------------------------------------------------------------
 function enk_assert_failed()
 {
   $args    = func_get_args();
   $format  = array_shift( $args );
   $message = vsprintf( $format, $args );
 
-  throw new \Exception($message);
+  throw new \Exception( $message );
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -52,7 +54,7 @@ class Node
   /**
    * The parent node of this node.
    *
-   * @var \SetBased\Enarksh\XmlGenerator\Node\Node
+   * @var Node
    */
   protected $myParent = null;
 
@@ -66,35 +68,35 @@ class Node
   /**
    * @var  \SetBased\Enarksh\XmlGenerator\Consummation\Consummation[]
    */
-  private $myConsummations = array();
+  protected $myConsummations = array();
 
   /**
    * The input ports of this node.
    *
-   * @var \SetBased\Enarksh\XmlGenerator\Port\InputPort[]
+   * @var InputPort[]
    */
-  private $myInputPorts = array();
+  protected $myInputPorts = array();
 
   /**
    * The child nodes of this node.
    *
-   * @var \SetBased\Enarksh\XmlGenerator\Node\Node[]
+   * @var Node[]
    */
-  private $myNodes = array();
+  protected $myNodes = array();
 
   /**
    * The output ports of this node.
    *
-   * @var \SetBased\Enarksh\XmlGenerator\Port\OutputPort[]
+   * @var OutputPort[]
    */
-  private $myOutputPorts = array();
+  protected $myOutputPorts = array();
 
   /**
    * The resources of this node.
    *
    * @var \SetBased\Enarksh\XmlGenerator\Resource\Resource[]
    */
-  private $myResources = array();
+  protected $myResources = array();
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
@@ -143,7 +145,8 @@ class Node
   public function addDependency( $theSuccessorNodeName,
                                  $theSuccessorPortName,
                                  $thePredecessorNodeName,
-                                 $thePredecessorPortName )
+                                 $thePredecessorPortName
+  )
   {
     if ($thePredecessorPortName==='') $thePredecessorPortName = self::ALL_PORT_NAME;
     if ($theSuccessorPortName==='') $theSuccessorPortName = self::ALL_PORT_NAME;
@@ -312,7 +315,7 @@ class Node
    *
    * @param string $theName
    *
-   * @return null|\SetBased\Enarksh\XmlGenerator\Node\Node
+   * @return null|Node
    */
   public function getChildNode( $theName )
   {
@@ -339,12 +342,10 @@ class Node
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * Returns input port with @a $theName. If no input port with @a $theName exists an exception is thrown.
-
    *
-*@param string $theName
-
+   * @param string $theName
    *
-*@return null|\SetBased\Enarksh\XmlGenerator\Port\InputPort|Port
+   * @return null|InputPort|Port
    */
   public function getInputPort( $theName )
   {
@@ -382,7 +383,7 @@ class Node
    *
    * @param string $theName
    *
-   * @return null|\SetBased\Enarksh\XmlGenerator\Port\OutputPort|Port
+   * @return OutputPort|Port
    */
   public function getOutputPort( $theName )
   {
@@ -405,9 +406,31 @@ class Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
+   * Returns all output ports of this node.
+   *
+   * @return OutputPort[]
+   */
+  public function getOutputPorts()
+  {
+    return $this->myOutputPorts;
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * Returns all input ports of this node.
+   *
+   * @return InputPort[]
+   */
+  public function getInputPorts()
+  {
+    return $this->myInputPorts;
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
    * Returns the parent node of this node.
    *
-   * @return \SetBased\Enarksh\XmlGenerator\Node\Node
+   * @return Node
    */
   public function getParent()
   {
@@ -449,7 +472,7 @@ class Node
   {
     // @todo test port already exists.
 
-    $port                 = new Port($this, $theName);
+    $port                 = new Port( $this, $theName );
     $this->myInputPorts[] = $port;
 
     return $port;
@@ -467,7 +490,7 @@ class Node
   {
     // @todo test port already exists.
 
-    $port                  = new Port($this, $theName);
+    $port                  = new Port( $this, $theName );
     $this->myOutputPorts[] = $port;
 
     return $port;
@@ -483,10 +506,43 @@ class Node
 
 
   //--------------------------------------------------------------------------------------------------------------------
+  protected function ensureDependencies()
+  {
+    if ($this->myNodes)
+    {
+      $input_port_all  = $this->getInputPort( self::ALL_PORT_NAME );
+      $output_port_all = $this->getOutputPort( self::ALL_PORT_NAME );
+
+      foreach ($this->myNodes as $node)
+      {
+        $node->ensureDependencies();
+      }
+
+      // Ensure that output port 'all' depends on all child nodes.
+      $this->addDependencyAllOutputPorts();
+
+      // Ensure the output port 'all' depends on input port 'all'.
+     // $output_port_all->addDependency( $input_port_all );
+
+      // Ensure input port 'all' of this node depends on output 'all' of each predecessor of this node.
+      foreach ($this->myInputPorts as $input_port)
+      {
+        foreach ($input_port->getAllDependencies() as $port)
+        {
+          if ($port->getNode()!=$this->myParent)
+          {
+            $input_port_all->addDependency( $port->getNode()->getOutputPort( self::ALL_PORT_NAME ) );
+          }
+        }
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * Removes duplicate dependencies and dependencies that are dependencies of predecessors.
    */
-  public function purge()
+  private function purge()
   {
     foreach ($this->myInputPorts as $port)
     {
@@ -502,6 +558,17 @@ class Node
     {
       $port->purge();
     }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * Ensures that all required dependencies between the 'all' input and output ports are present and removes redundant
+   * dependencies between ports and nodes.
+   */
+  public function finalize()
+  {
+    $this->ensureDependencies();
+    $this->purge();
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -568,7 +635,7 @@ class Node
    *
    * @param string $theName
    *
-   * @return null|\SetBased\Enarksh\XmlGenerator\Node\Node
+   * @return null|Node
    */
   public function searchChildNode( $theName )
   {
@@ -592,7 +659,7 @@ class Node
    *
    * @param $theName
    *
-   * @return null|\SetBased\Enarksh\XmlGenerator\Port\InputPort
+   * @return null|InputPort
    */
   public function searchInputPort( $theName )
   {
@@ -616,7 +683,7 @@ class Node
    *
    * @param string $theName
    *
-   * @return null|\SetBased\Enarksh\XmlGenerator\Port\OutputPort
+   * @return null|OutputPort
    */
   public function searchOutputPort( $theName )
   {

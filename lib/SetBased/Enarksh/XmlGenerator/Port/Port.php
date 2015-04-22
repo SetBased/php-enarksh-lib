@@ -15,13 +15,13 @@ use SetBased\Enarksh\XmlGenerator\Node\Node;
 //----------------------------------------------------------------------------------------------------------------------
 /**
  * Class Port
- *
  * Class for generating XML messages for elements of type 'InputPortType' and 'OutputPortType'.
  *
  * @package SetBased\Enarksh\XmlGenerator\Port
  */
 class Port
 {
+
   /**
    * The node of which this port is a port.
    *
@@ -39,14 +39,14 @@ class Port
   /**
    * The dependencies of this port.
    *
-   * @var \SetBased\Enarksh\XmlGenerator\Port\Port[]
+   * @var Port[]
    */
   protected $myPredecessors = array();
 
   /**
    * The dependants of this port.
    *
-   * @var \SetBased\Enarksh\XmlGenerator\Port\Port[]
+   * @var Port[]
    */
   protected $mySuccessors = array();
 
@@ -54,8 +54,8 @@ class Port
   /**
    * Creates an Port object.
    *
-   * @internal param string $theNodeName The node of the port.
-   * @internal param string $theName The name of the port.
+   * @param Node   $theNode     The node of the port.
+   * @param string $thePortName The name of the port.
    */
   public function __construct( $theNode, $thePortName )
   {
@@ -64,13 +64,16 @@ class Port
   }
 
   //--------------------------------------------------------------------------------------------------------------------
-  /** Add @a $thePort as a dependency of this port.
+  /**
+   * Add a port as a dependency of this port.
+   *
+   * @param Port $thePort
    */
   public function addDependency( $thePort )
   {
     /** xxx @todo validate owner of port and owner of this port */
 
-    $this->myPredecessors[] = $thePort;
+    if (!in_array( $thePort, $this->myPredecessors )) $this->myPredecessors[] = $thePort;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -100,7 +103,7 @@ class Port
   /**
    * Returns all the dependencies of this port.
    *
-   * @return  \SetBased\Enarksh\XmlGenerator\Port\Port[]
+   * @return Port[]
    */
   public function getAllDependencies()
   {
@@ -144,6 +147,17 @@ class Port
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
+   * Returns the node of this port.
+   *
+   * @return Node
+   */
+  public function getNode()
+  {
+    return $this->myNode;
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
    * Returns the node name of this port.
    *
    * @return string
@@ -176,14 +190,8 @@ class Port
       {
         $new[] = $port;
       }
-      /*
-      else
-      {
-        echo "From: ".$this->myNode->GetName().'/'.$this->GetName()."\n";
-        echo "Purge: $path\n";
-      }
-      */
     }
+
     $this->myPredecessors = $new;
   }
 
@@ -227,8 +235,8 @@ class Port
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @param \XmlWriter                               $theXmlWriter
-   * @param Node $theParentNode
+   * @param \XmlWriter $theXmlWriter
+   * @param Node       $theParentNode
    */
   private function generateXmlDependant( $theXmlWriter, $theParentNode )
   {
