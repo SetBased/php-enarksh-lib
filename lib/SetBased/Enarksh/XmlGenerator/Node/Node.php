@@ -1,15 +1,8 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Node;
 
+use SetBased\Enarksh\XmlGenerator\Consumption\Consumption;
 use SetBased\Enarksh\XmlGenerator\Port\InputPort;
 use SetBased\Enarksh\XmlGenerator\Port\OutputPort;
 use SetBased\Enarksh\XmlGenerator\Port\Port;
@@ -25,10 +18,12 @@ function enk_assert_failed()
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-/** @brief Class for generating XML messages for elements of type 'NodeType'.
+/**
+ * Class for generating XML messages for elements of type 'NodeType'.
  */
 class Node
 {
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * Token for "all" input or output ports on a node.
    */
@@ -52,9 +47,9 @@ class Node
   protected $myChildNodes = array();
 
   /**
-   * @var \SetBased\Enarksh\XmlGenerator\Consummation\Consummation[]
+   * @var \SetBased\Enarksh\XmlGenerator\Consumption\Consumption[]
    */
-  protected $myConsummations = array();
+  protected $myConsumptions = array();
 
   /**
    * The input ports of this node.
@@ -111,7 +106,9 @@ class Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Adds node @a $theChildNode as a child node of this node.
+   * Adds a node as a child node of this node.
+   *
+   * @param Node $theChildNode
    */
   public function addChildNode( $theChildNode )
   {
@@ -126,13 +123,15 @@ class Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Adds resource @a $theConsummation as a consummation of this node.
+   * Adds a consumption as a consumption of this node.
+   *
+   * @param Consumption $theConsumption
    */
-  public function addConsummation( $theConsummation )
+  public function addConsumption( $theConsumption )
   {
-    // @todo test consummation exists.
+    // @todo test consumption exists.
 
-    $this->myConsummations[] = $theConsummation;
+    $this->myConsumptions[] = $theConsumption;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -279,14 +278,14 @@ class Node
     }
 
 
-    // Generate XML for Consummations.
-    if (!empty($this->myConsummations))
+    // Generate XML for Consumptions.
+    if (!empty($this->myConsumptions))
     {
-      $theXmlWriter->startElement( 'Consummations' );
-      foreach ($this->myConsummations as $consummation)
+      $theXmlWriter->startElement( 'Consumptions' );
+      foreach ($this->myConsumptions as $consumption)
       {
-        $theXmlWriter->startElement( $consummation->getConsummationTypeTag() );
-        $consummation->generateXml( $theXmlWriter );
+        $theXmlWriter->startElement( $consumption->getConsumptionTypeTag() );
+        $consumption->generateXml( $theXmlWriter );
         $theXmlWriter->endElement();
       }
       $theXmlWriter->endElement();
@@ -338,7 +337,9 @@ class Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @param  string $thePortName
+   * @param string $thePortName
+   * @param Port[] $ports
+   * @param int    $level
    *
    * @return array
    */
@@ -356,6 +357,8 @@ class Node
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * @param  string $thePortName
+   * @param Port[]  $ports
+   * @param int     $level
    *
    * @return array
    */
@@ -606,6 +609,9 @@ class Node
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * Replaces any dependency of this node on node $theNodeName with dependencies $theDependencies.
+   *
+   * @param string $theNodeName
+   * @param Port[] $theDependencies
    */
   public function replaceNodeDependency( $theNodeName, $theDependencies )
   {

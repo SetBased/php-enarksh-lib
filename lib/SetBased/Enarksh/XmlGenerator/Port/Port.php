@@ -199,9 +199,7 @@ abstract class Port
    * Replaces any dependency of this port on node $theNodeName with dependencies $theDependencies.
    *
    * @param string $theNodeName
-   * @param        $theDependencies
-   *
-   * @internal param $
+   * @param Port[] $theDependencies
    */
   public function replaceNodeDependency( $theNodeName, $theDependencies )
   {

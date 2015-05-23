@@ -1,52 +1,59 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-namespace SetBased\Enarksh\XmlGenerator\Consummation;
+namespace SetBased\Enarksh\XmlGenerator\Consumption;
 
 //----------------------------------------------------------------------------------------------------------------------
 /**
- * Class for generating XML messages for elements of type 'ConsummationType'.
+ * Class CountingConsumption
  *
- * @package SetBased\Enarksh\XmlGenerator\Consummation
+ * Class for generating XML messages for elements of type 'CountingConsumptionType'.
  */
-abstract class Consummation
+class CountingConsumption extends Consumption
 {
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * The name of this consummation.
+   * The amount consumed by this consumption.
    *
-   * @var string
+   * @var int
    */
-  protected $myName;
+  private $myAmount;
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * Object constructor.
    *
-   * @param string $theName The name of the consummation.
+   * @param string $theName   The name of the consumption.
+   * @param int    $theAmount The amount consumed.
    */
-  public function __construct( $theName )
+  public function __construct( $theName, $theAmount )
   {
-    $this->myName = (string)$theName;
+    parent::__construct( $theName );
+
+    // xxx Validate $theAmount
+    $this->myAmount = $theAmount;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Generates XML-code for this consummation.
-   *
-   * @param \XmlWriter $theXmlWriter
+   * @param $theXmlWriter
    */
   public function generateXml( $theXmlWriter )
   {
-    $theXmlWriter->startElement( 'ResourceName' );
-    $theXmlWriter->text( $this->myName );
+    parent::generateXml( $theXmlWriter );
+
+    $theXmlWriter->startElement( 'Amount' );
+    $theXmlWriter->text( $this->myAmount );
     $theXmlWriter->endElement();
   }
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Returns the XML-tag for the type of this consummation.
+   * @return string
    */
-  abstract public function getConsummationTypeTag();
+  public function getConsumptionTypeTag()
+  {
+    return 'CountingConsumption';
+  }
 
   //--------------------------------------------------------------------------------------------------------------------
 }

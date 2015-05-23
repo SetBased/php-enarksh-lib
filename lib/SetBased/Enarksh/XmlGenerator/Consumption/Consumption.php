@@ -1,63 +1,50 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-namespace SetBased\Enarksh\XmlGenerator\Consummation;
+namespace SetBased\Enarksh\XmlGenerator\Consumption;
 
 //----------------------------------------------------------------------------------------------------------------------
 /**
- * Class ReadWriteLockConsummation
- *
- * Class for generating XML messages for elements of type 'ReadWriteLockConsummationType'.
- *
- * @package SetBased\Enarksh\XmlGenerator\Consummation
+ * Class for generating XML messages for elements of type 'ConsumptionType'.
  */
-class ReadWriteLockConsummation extends Consummation
+abstract class Consumption
 {
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * The mode of the lock of this consummation.
+   * The name of this consumption.
    *
    * @var string
    */
-  private $myMode;
+  protected $myName;
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * Object constructor.
    *
-   * @param string $theName The name of the consummation.
-   * @param string $theMode The mode of the consummation.
-   *                        read Read or shared lock on the resource.
-   *                        write Write or exclusive lock on the resource.
+   * @param string $theName The name of the consumption.
    */
-  public function __construct( $theName, $theMode )
+  public function __construct( $theName )
   {
-    // xxx Validate $theMode
-
     $this->myName = (string)$theName;
-    $this->myMode = $theMode;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @param $theXmlWriter
+   * Generates XML-code for this consumption.
+   *
+   * @param \XmlWriter $theXmlWriter
    */
   public function generateXml( $theXmlWriter )
   {
-    parent::generateXml( $theXmlWriter );
-
-    $theXmlWriter->startElement( 'Mode' );
-    $theXmlWriter->text( $this->myMode );
+    $theXmlWriter->startElement( 'ResourceName' );
+    $theXmlWriter->text( $this->myName );
     $theXmlWriter->endElement();
   }
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @return string
+   * Returns the XML-tag for the type of this consumption.
    */
-  public function getConsummationTypeTag()
-  {
-    return 'ReadWriteLockConsummation';
-  }
+  abstract public function getConsumptionTypeTag();
 
   //--------------------------------------------------------------------------------------------------------------------
 }

@@ -1,38 +1,38 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-namespace SetBased\Enarksh\XmlGenerator\Consummation;
+namespace SetBased\Enarksh\XmlGenerator\Consumption;
 
 //----------------------------------------------------------------------------------------------------------------------
 /**
- * Class CountingConsummation
+ * Class ReadWriteLockConsumption
  *
- * Class for generating XML messages for elements of type 'CountingConsummationType'.
- *
- * @package SetBased\Enarksh\XmlGenerator\Consummation
+ * Class for generating XML messages for elements of type 'ReadWriteLockConsumptionType'.
  */
-class CountingConsummation extends Consummation
+class ReadWriteLockConsumption extends Consumption
 {
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * The amount consumed by this consummation.
+   * The mode of the lock of this consumption.
    *
-   * @var int
+   * @var string
    */
-  private $myAmount;
+  private $myMode;
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * Object constructor.
    *
-   * @param string $theName   The name of the consummation.
-   * @param int    $theAmount The amount consumed.
+   * @param string $theName The name of the consumption.
+   * @param string $theMode The mode of the consumption.
+   *                        read Read or shared lock on the resource.
+   *                        write Write or exclusive lock on the resource.
    */
-  public function __construct( $theName, $theAmount )
+  public function __construct( $theName, $theMode )
   {
-    parent::__construct( $theName );
+    // xxx Validate $theMode
 
-    // xxx Validate $theAmount
-    $this->myAmount = $theAmount;
+    $this->myName = (string)$theName;
+    $this->myMode = $theMode;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -43,8 +43,8 @@ class CountingConsummation extends Consummation
   {
     parent::generateXml( $theXmlWriter );
 
-    $theXmlWriter->startElement( 'Amount' );
-    $theXmlWriter->text( $this->myAmount );
+    $theXmlWriter->startElement( 'Mode' );
+    $theXmlWriter->text( $this->myMode );
     $theXmlWriter->endElement();
   }
 
@@ -52,9 +52,9 @@ class CountingConsummation extends Consummation
   /**
    * @return string
    */
-  public function getConsummationTypeTag()
+  public function getConsumptionTypeTag()
   {
-    return 'CountingConsummation';
+    return 'ReadWriteLockConsumption';
   }
 
   //--------------------------------------------------------------------------------------------------------------------
