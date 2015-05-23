@@ -1,25 +1,27 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Node;
 
 //----------------------------------------------------------------------------------------------------------------------
-/** @brief Class for generating XML messages for elements of type 'CommandJobType'.
+use SetBased\Enarksh\XmlGenerator\Port\Port;
+
+/**
+ * Class for generating XML messages for elements of type 'CommandJobType'.
  */
 class CommandJobNode extends Node
 {
-  /** The arguments for the executable.
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * The arguments for the executable.
+   *
+   * @var string[]
    */
   private $myArgs = array();
 
-  /** The path to the executable that must be run by this job.
+  /**
+   * The path to the executable that must be run by this job.
+   *
+   * @var string
    */
   private $myPath;
 
@@ -54,18 +56,18 @@ class CommandJobNode extends Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @param bool   $theRecursiveFlag
-   * @param string $theOutputPortName
+   * @param string $thePortName
+   * @param Port[] $ports
+   * @param Int    $level
    *
    * @return array
    */
-  public function getDependenciesPaths( $theRecursiveFlag, $theOutputPortName )
+  public function getImplicitDependenciesOutputPorts( $thePortName, &$ports, $level )
   {
-    /** @todo validate node has only one input and one output port */
+    $port = $this->getOutputPort( $thePortName );
+    if (!in_array( $port, $ports, true )) if ($level) $ports[] = $port;
 
-    $port = $this->getInputPort( self::ALL_PORT_NAME );
-
-    return $port->getDependenciesPaths( $theRecursiveFlag );
+    $this->getImplicitDependenciesInputPorts( self::ALL_PORT_NAME, $ports, $level + 1 );
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -96,7 +98,8 @@ class CommandJobNode extends Node
   }
 
   //--------------------------------------------------------------------------------------------------------------------
-  /** Set the path to the executable that must be run by this job.
+  /**
+   * Set the path to the executable that must be run by this job.
    *
    * @param string $thePath The path to the executable that must be run by this job.
    */

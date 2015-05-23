@@ -1,13 +1,5 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Port;
 
 use SetBased\Enarksh\XmlGenerator\Node\Node;
@@ -19,9 +11,9 @@ use SetBased\Enarksh\XmlGenerator\Node\Node;
  *
  * @package SetBased\Enarksh\XmlGenerator\Port
  */
-class Port
+abstract class Port
 {
-
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * The node of which this port is a port.
    *
@@ -73,7 +65,7 @@ class Port
   {
     /** xxx @todo validate owner of port and owner of this port */
 
-    if (!in_array( $thePort, $this->myPredecessors )) $this->myPredecessors[] = $thePort;
+    if (!in_array( $thePort, $this->myPredecessors, true )) $this->myPredecessors[] = $thePort;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -112,27 +104,32 @@ class Port
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @param bool $theRecursiveFlag
+   * @param Port[] $ports
+   * @param int    $level
    *
    * @return array
    */
-  public function getDependenciesPaths( $theRecursiveFlag = false )
+  public function getDependenciesPorts( &$ports, $level )
   {
-    $ret = array();
-
     foreach ($this->myPredecessors as $port)
     {
-      $ret[] = $port->myNode->getName().'/'.$port->getName();
-
-      if ($theRecursiveFlag)
+      if (!in_array( $port, $ports, true ))
       {
-        $tmp = $port->myNode->getDependenciesPaths( $theRecursiveFlag, $port->getName() );
-        $ret = array_merge( $ret, $tmp );
+        if ($level) $ports[] = $port;
+
+        $port->getImplicitDependenciesPorts( $ports, $level + 1 );
       }
     }
-
-    return $ret;
   }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * @param Port[] $ports
+   * @param int    $level
+   *
+   * @return array
+   */
+  abstract public function getImplicitDependenciesPorts( &$ports, $level );
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
@@ -173,26 +170,28 @@ class Port
    */
   public function purge()
   {
-    // Get all implicit dependencies paths.
-    $imp_deps = array();
+    // Get all implicit dependencies ports.
+    $implicit_dependencies = array();
     foreach ($this->myPredecessors as $port)
     {
-      $tmp      = $port->myNode->getDependenciesPaths( true, $port->getName() );
-      $imp_deps = array_merge( $imp_deps, $tmp );
+      $port->getImplicitDependenciesPorts( $implicit_dependencies, 0 );
     }
 
     // Create a new dependency array without implicit dependencies.
-    $new = array();
+    $direct_dependencies = array();
     foreach ($this->myPredecessors as $port)
     {
-      $path = $port->myNode->getName().'/'.$port->getName();
-      if (!in_array( $path, $imp_deps ))
+      if (!in_array( $port, $implicit_dependencies, true ))
       {
-        $new[] = $port;
+        // Prevent duplicate dependencies.
+        if (!in_array( $port, $direct_dependencies, true ))
+        {
+          $direct_dependencies[] = $port;
+        }
       }
     }
 
-    $this->myPredecessors = $new;
+    $this->myPredecessors = $direct_dependencies;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -232,6 +231,12 @@ class Port
       }
     }
   }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * @return string
+   */
+  abstract protected function getPortTypeTag();
 
   //--------------------------------------------------------------------------------------------------------------------
   /**

@@ -11,10 +11,12 @@
 namespace SetBased\Enarksh\XmlGenerator\Resource;
 
 //----------------------------------------------------------------------------------------------------------------------
-/** @brief Class for generating XML messages for elements of type 'ResourceType'.
+/**
+ * Class for generating XML messages for elements of type 'ResourceType'.
  */
 abstract class Resource
 {
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * The name of this resource.
    *

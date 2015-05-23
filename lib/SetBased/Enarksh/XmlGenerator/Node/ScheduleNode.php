@@ -18,7 +18,7 @@ class ScheduleNode extends Node
   //--------------------------------------------------------------------------------------------------------------------
   protected function ensureDependencies()
   {
-    foreach ($this->myNodes as $node)
+    foreach ($this->myChildNodes as $node)
     {
       $node->ensureDependencies();
     }

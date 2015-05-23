@@ -1,21 +1,18 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Resource;
 
 //----------------------------------------------------------------------------------------------------------------------
-/** @brief Class for generating XML messages for elements of type 'CountingResourceType'.
+/**
+ * Class for generating XML messages for elements of type 'CountingResourceType'.
  */
 class CountingResource extends Resource
 {
-  /** The amount available of this resource.
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * The amount available of this resource.
+   *
+   * @var int
    */
   private $myAmount;
 

@@ -45,28 +45,14 @@ class Node
   const NODE_ALL_NAME = '*';
 
   /**
-   * The name of this node.
+   * The child nodes of this node.
    *
-   * @var string
+   * @var Node[]
    */
-  protected $myName;
+  protected $myChildNodes = array();
 
   /**
-   * The parent node of this node.
-   *
-   * @var Node
-   */
-  protected $myParent = null;
-
-  /**
-   * The user under which this node or its child nodes must run.
-   *
-   * @var string
-   */
-  protected $myUserName;
-
-  /**
-   * @var  \SetBased\Enarksh\XmlGenerator\Consummation\Consummation[]
+   * @var \SetBased\Enarksh\XmlGenerator\Consummation\Consummation[]
    */
   protected $myConsummations = array();
 
@@ -78,11 +64,11 @@ class Node
   protected $myInputPorts = array();
 
   /**
-   * The child nodes of this node.
+   * The name of this node.
    *
-   * @var Node[]
+   * @var string
    */
-  protected $myNodes = array();
+  protected $myName;
 
   /**
    * The output ports of this node.
@@ -92,11 +78,25 @@ class Node
   protected $myOutputPorts = array();
 
   /**
+   * The parent node of this node.
+   *
+   * @var Node
+   */
+  protected $myParent = null;
+
+  /**
    * The resources of this node.
    *
    * @var \SetBased\Enarksh\XmlGenerator\Resource\Resource[]
    */
   protected $myResources = array();
+
+  /**
+   * The user under which this node or its child nodes must run.
+   *
+   * @var string
+   */
+  protected $myUserName;
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
@@ -119,7 +119,7 @@ class Node
     // @todo Test node is it node zelf.
     // @todo Test parent node is not set.
 
-    $this->myNodes[] = $theChildNode;
+    $this->myChildNodes[] = $theChildNode;
 
     $theChildNode->myParent = $this;
   }
@@ -182,7 +182,7 @@ class Node
   {
     $parent_port = $this->getInputPort( self::ALL_PORT_NAME );
 
-    foreach ($this->myNodes as $node)
+    foreach ($this->myChildNodes as $node)
     {
       $child_port = $node->getInputPort( self::ALL_PORT_NAME );
       $child_port->addDependency( $parent_port );
@@ -197,7 +197,7 @@ class Node
   {
     $parent_port = $this->getOutputPort( self::ALL_PORT_NAME );
 
-    foreach ($this->myNodes as $node)
+    foreach ($this->myChildNodes as $node)
     {
       $child_port = $node->getOutputPort( self::ALL_PORT_NAME );
       $parent_port->addDependency( $child_port );
@@ -215,6 +215,17 @@ class Node
     // @todo test resource exists.
 
     $this->myResources[] = $theResource;
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * Ensures that all required dependencies between the 'all' input and output ports are present and removes redundant
+   * dependencies between ports and nodes.
+   */
+  public function finalize()
+  {
+    $this->ensureDependencies();
+    $this->purge();
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -283,10 +294,10 @@ class Node
 
 
     // Generate XML for Nodes.
-    if (!empty($this->myNodes))
+    if (!empty($this->myChildNodes))
     {
       $theXmlWriter->startElement( 'Nodes' );
-      foreach ($this->myNodes as $node)
+      foreach ($this->myChildNodes as $node)
       {
         $node->preGenerateXml();
         $node->generateXml( $theXmlWriter );
@@ -327,16 +338,36 @@ class Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @param  bool   $theRecursiveFlag
-   * @param  string $theOutputPortName
+   * @param  string $thePortName
    *
    * @return array
    */
-  public function getDependenciesPaths( $theRecursiveFlag, $theOutputPortName )
+  public function getImplicitDependenciesInputPorts( $thePortName, &$ports, $level )
   {
-    $ret = array();
+    $port = $this->getInputPort( $thePortName );
 
-    return $ret;
+    if (!in_array( $port, $ports, true ))
+    {
+      if ($level) $ports[] = $port;
+      $port->getDependenciesPorts( $ports, $level + 1 );
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * @param  string $thePortName
+   *
+   * @return array
+   */
+  public function getImplicitDependenciesOutputPorts( $thePortName, &$ports, $level )
+  {
+    $port = $this->getOutputPort( $thePortName );
+
+    if (!in_array( $port, $ports, true ))
+    {
+      if ($level) $ports[] = $port;
+      $port->getDependenciesPorts( $ports, $level + 1 );
+    }
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -364,6 +395,17 @@ class Node
     }
 
     return $ret;
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * Returns all input ports of this node.
+   *
+   * @return InputPort[]
+   */
+  public function getInputPorts()
+  {
+    return $this->myInputPorts;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -417,17 +459,6 @@ class Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Returns all input ports of this node.
-   *
-   * @return InputPort[]
-   */
-  public function getInputPorts()
-  {
-    return $this->myInputPorts;
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
    * Returns the parent node of this node.
    *
    * @return Node
@@ -472,7 +503,7 @@ class Node
   {
     // @todo test port already exists.
 
-    $port                 = new Port( $this, $theName );
+    $port                 = new InputPort( $this, $theName );
     $this->myInputPorts[] = $port;
 
     return $port;
@@ -490,11 +521,12 @@ class Node
   {
     // @todo test port already exists.
 
-    $port                  = new Port( $this, $theName );
+    $port                  = new OutputPort( $this, $theName );
     $this->myOutputPorts[] = $port;
 
     return $port;
   }
+
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
@@ -504,52 +536,18 @@ class Node
   {
   }
 
-
-  //--------------------------------------------------------------------------------------------------------------------
-  protected function ensureDependencies()
-  {
-    if ($this->myNodes)
-    {
-      $input_port_all  = $this->getInputPort( self::ALL_PORT_NAME );
-      $output_port_all = $this->getOutputPort( self::ALL_PORT_NAME );
-
-      foreach ($this->myNodes as $node)
-      {
-        $node->ensureDependencies();
-      }
-
-      // Ensure that output port 'all' depends on all child nodes.
-      $this->addDependencyAllOutputPorts();
-
-      // Ensure the output port 'all' depends on input port 'all'.
-     // $output_port_all->addDependency( $input_port_all );
-
-      // Ensure input port 'all' of this node depends on output 'all' of each predecessor of this node.
-      foreach ($this->myInputPorts as $input_port)
-      {
-        foreach ($input_port->getAllDependencies() as $port)
-        {
-          if ($port->getNode()!=$this->myParent)
-          {
-            $input_port_all->addDependency( $port->getNode()->getOutputPort( self::ALL_PORT_NAME ) );
-          }
-        }
-      }
-    }
-  }
-
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * Removes duplicate dependencies and dependencies that are dependencies of predecessors.
    */
-  private function purge()
+  public function purge()
   {
     foreach ($this->myInputPorts as $port)
     {
       $port->purge();
     }
 
-    foreach ($this->myNodes as $node)
+    foreach ($this->myChildNodes as $node)
     {
       $node->purge();
     }
@@ -558,17 +556,6 @@ class Node
     {
       $port->purge();
     }
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * Ensures that all required dependencies between the 'all' input and output ports are present and removes redundant
-   * dependencies between ports and nodes.
-   */
-  public function finalize()
-  {
-    $this->ensureDependencies();
-    $this->purge();
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -583,12 +570,12 @@ class Node
     $node = null;
 
     // Find and remove node $theNodeName.
-    foreach ($this->myNodes as $i => $tmp)
+    foreach ($this->myChildNodes as $i => $tmp)
     {
       if ($tmp->myName===$theNodeName)
       {
         $node = $tmp;
-        unset($this->myNodes[$i]);
+        unset($this->myChildNodes[$i]);
         break;
       }
     }
@@ -605,7 +592,7 @@ class Node
       }
     }
 
-    foreach ($this->myNodes as $tmp)
+    foreach ($this->myChildNodes as $tmp)
     {
       $tmp->replaceNodeDependency( $theNodeName, $deps );
     }
@@ -640,7 +627,7 @@ class Node
   public function searchChildNode( $theName )
   {
     $ret = null;
-    foreach ($this->myNodes as $node)
+    foreach ($this->myChildNodes as $node)
     {
       if ($node->myName===$theName)
       {
@@ -722,6 +709,39 @@ class Node
     // @todo Test user name not empty of null.
 
     $this->myUserName = $theUserName;
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  protected function ensureDependencies()
+  {
+    if ($this->myChildNodes)
+    {
+      $input_port_all = $this->getInputPort( self::ALL_PORT_NAME );
+      // $output_port_all = $this->getOutputPort( self::ALL_PORT_NAME );
+
+      foreach ($this->myChildNodes as $node)
+      {
+        $node->ensureDependencies();
+      }
+
+      // Ensure that output port 'all' depends on all child nodes.
+      $this->addDependencyAllOutputPorts();
+
+      // Ensure the output port 'all' depends on input port 'all'.
+      // $output_port_all->addDependency( $input_port_all );
+
+      // Ensure input port 'all' of this node depends on output 'all' of each predecessor of this node.
+      foreach ($this->myInputPorts as $input_port)
+      {
+        foreach ($input_port->getAllDependencies() as $port)
+        {
+          if ($port->getNode()!=$this->myParent)
+          {
+            $input_port_all->addDependency( $port->getNode()->getOutputPort( self::ALL_PORT_NAME ) );
+          }
+        }
+      }
+    }
   }
 
   //--------------------------------------------------------------------------------------------------------------------

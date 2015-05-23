@@ -1,20 +1,25 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Port;
 
 //----------------------------------------------------------------------------------------------------------------------
-/** @brief Class for generating XML messages for elements of type 'OutputPortType'.
+/**
+ * Class for generating XML messages for elements of type 'OutputPortType'.
  */
 class OutputPort extends Port
 {
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * @param Port[] $ports
+   * @param int    $level
+   *
+   * @return array
+   */
+  public function getImplicitDependenciesPorts( &$ports, $level )
+  {
+    return $this->myNode->getImplicitDependenciesOutputPorts( $this->myPortName, $ports, $level );
+  }
+
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * @return string

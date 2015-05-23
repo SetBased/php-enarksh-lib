@@ -1,17 +1,10 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Resource;
 
 //----------------------------------------------------------------------------------------------------------------------
-/** @brief Class for generating XML messages for elements of type 'ReadWriteLockResourceType'.
+/**
+ * Class for generating XML messages for elements of type 'ReadWriteLockResourceType'.
  */
 class ReadWriteLockResource extends Resource
 {

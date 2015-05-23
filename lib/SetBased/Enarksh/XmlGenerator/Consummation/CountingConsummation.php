@@ -1,13 +1,5 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Consummation;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20,6 +12,7 @@ namespace SetBased\Enarksh\XmlGenerator\Consummation;
  */
 class CountingConsummation extends Consummation
 {
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * The amount consumed by this consummation.
    *

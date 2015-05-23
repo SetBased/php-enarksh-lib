@@ -1,17 +1,8 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Consummation;
 
 //----------------------------------------------------------------------------------------------------------------------
-
 /**
  * Class for generating XML messages for elements of type 'ConsummationType'.
  *
@@ -19,6 +10,7 @@ namespace SetBased\Enarksh\XmlGenerator\Consummation;
  */
 abstract class Consummation
 {
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * The name of this consummation.
    *

@@ -1,13 +1,5 @@
 <?php
 //----------------------------------------------------------------------------------------------------------------------
-/**
- * @author Paul Water
- * @par    Copyright:
- * Set Based IT Consultancy
- * $Date: $
- * $Revision: $
- */
-//----------------------------------------------------------------------------------------------------------------------
 namespace SetBased\Enarksh\XmlGenerator\Consummation;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -20,6 +12,7 @@ namespace SetBased\Enarksh\XmlGenerator\Consummation;
  */
 class ReadWriteLockConsummation extends Consummation
 {
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * The mode of the lock of this consummation.
    *
@@ -43,7 +36,6 @@ class ReadWriteLockConsummation extends Consummation
     $this->myName = (string)$theName;
     $this->myMode = $theMode;
   }
-
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
