@@ -21,6 +21,11 @@
       "url": "http://packagist.setbased.nl/"
     }
   ],
+  "require-dev": {
+    "phing/phing": "2.x",
+    "setbased/phing-extensions": "1.*",
+    "setbased/php-coding-standards": "0.*"
+  },
   "require": {
 
     "php": ">=5.4.0"
@@ -29,5 +34,8 @@
     "psr-4": {
       "SetBased\\Enarksh\\": "lib"
     }
+  },
+  "config": {
+    "bin-dir": "bin"
   }
 }
