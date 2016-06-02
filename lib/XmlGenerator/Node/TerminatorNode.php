@@ -8,15 +8,30 @@ namespace SetBased\Enarksh\XmlGenerator\Node;
  *
  * @todo validate node has only one input port and no output ports.
  */
-class TerminatorNode extends Node
+class TerminatorNode extends SimpleJobNode
 {
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @param \XmlWriter $theXmlWriter
+   * Object constructor.
+   *
+   * @param string $theName The name of the node.
    */
-  public function generateXml( $theXmlWriter )
+  public function __construct( $theName )
   {
-    $theXmlWriter->startElement( 'Terminator' );
+    parent::__construct( $theName );
+
+    // A terminator node has only one input and none output port.
+    $this->makeInputPort( Node::ALL_PORT_NAME );
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * @param \XmlWriter $theXmlWriter
+   * @param string     $theName
+   */
+  public function generateXml( $theXmlWriter, $theName = 'Terminator' )
+  {
+    $theXmlWriter->startElement( $theName );
 
     parent::generateXml( $theXmlWriter );
 

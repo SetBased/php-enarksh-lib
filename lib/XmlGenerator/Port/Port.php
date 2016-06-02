@@ -124,6 +124,30 @@ abstract class Port
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
+   * Return true if this port is dependant on a port.
+   *
+   * @param Port $thePort The port.
+   *
+   * @return bool
+   */
+  public function isDependant( $thePort )
+  {
+    return in_array( $thePort, $this->myPredecessors, true );
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * Return true if this port has one or more predecessors.
+   *
+   * @return bool
+   */
+  public function hasPredecessor()
+  {
+    return !empty($this->myPredecessors);
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
    * @param Port[] $ports
    * @param int    $level
    *

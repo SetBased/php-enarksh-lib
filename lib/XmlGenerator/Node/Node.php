@@ -21,7 +21,7 @@ function enk_assert_failed()
 /**
  * Class for generating XML messages for elements of type 'NodeType'.
  */
-class Node
+abstract class Node
 {
   //--------------------------------------------------------------------------------------------------------------------
   /**
@@ -38,13 +38,6 @@ class Node
    * Token for all child nodes.
    */
   const NODE_ALL_NAME = '*';
-
-  /**
-   * The child nodes of this node.
-   *
-   * @var Node[]
-   */
-  protected $myChildNodes = array();
 
   /**
    * @var \SetBased\Enarksh\XmlGenerator\Consumption\Consumption[]
@@ -80,13 +73,6 @@ class Node
   protected $myParent = null;
 
   /**
-   * The resources of this node.
-   *
-   * @var \SetBased\Enarksh\XmlGenerator\Resource\Resource[]
-   */
-  protected $myResources = array();
-
-  /**
    * The user under which this node or its child nodes must run.
    *
    * @var string
@@ -106,23 +92,6 @@ class Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Adds a node as a child node of this node.
-   *
-   * @param Node $theChildNode
-   */
-  public function addChildNode( $theChildNode )
-  {
-    // @todo Test node exists.
-    // @todo Test node is it node zelf.
-    // @todo Test parent node is not set.
-
-    $this->myChildNodes[] = $theChildNode;
-
-    $theChildNode->myParent = $this;
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
    * Adds a consumption as a consumption of this node.
    *
    * @param Consumption $theConsumption
@@ -133,6 +102,16 @@ class Node
 
     $this->myConsumptions[] = $theConsumption;
   }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * Returns a child node by name
+   *
+   * @param string $theName The name of the child node.
+   *
+   * @return Node
+   */
+  abstract public function getChildNode( $theName );
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
@@ -174,58 +153,7 @@ class Node
   }
 
   //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * Add dependencies between the 'all' input port of this node and the 'all' input port of all this child nodes.
-   */
-  public function addDependencyAllInputPorts()
-  {
-    $parent_port = $this->getInputPort( self::ALL_PORT_NAME );
-
-    foreach ($this->myChildNodes as $node)
-    {
-      $child_port = $node->getInputPort( self::ALL_PORT_NAME );
-      $child_port->addDependency( $parent_port );
-    }
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * Add dependencies between the 'all' output port of this node and the 'all' output of all this child nodes.
-   */
-  public function addDependencyAllOutputPorts()
-  {
-    $parent_port = $this->getOutputPort( self::ALL_PORT_NAME );
-
-    foreach ($this->myChildNodes as $node)
-    {
-      $child_port = $node->getOutputPort( self::ALL_PORT_NAME );
-      $parent_port->addDependency( $child_port );
-    }
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * Adds resource @a $theResource as a resource of this node.
-   *
-   * @param \SetBased\Enarksh\XmlGenerator\Resource\Resource
-   */
-  public function addResource( $theResource )
-  {
-    // @todo test resource exists.
-
-    $this->myResources[] = $theResource;
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * Ensures that all required dependencies between the 'all' input and output ports are present and removes redundant
-   * dependencies between ports and nodes.
-   */
-  public function finalize()
-  {
-    $this->ensureDependencies();
-    $this->purge();
-  }
+  abstract public function finalize();
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
@@ -264,20 +192,6 @@ class Node
     }
 
 
-    // Generate XML for Resources.
-    if (!empty($this->myResources))
-    {
-      $theXmlWriter->startElement( 'Resources' );
-      foreach ($this->myResources as $resource)
-      {
-        $theXmlWriter->startElement( $resource->getResourceTypeTag() );
-        $resource->generateXml( $theXmlWriter );
-        $theXmlWriter->endElement();
-      }
-      $theXmlWriter->endElement();
-    }
-
-
     // Generate XML for Consumptions.
     if (!empty($this->myConsumptions))
     {
@@ -287,19 +201,6 @@ class Node
         $theXmlWriter->startElement( $consumption->getConsumptionTypeTag() );
         $consumption->generateXml( $theXmlWriter );
         $theXmlWriter->endElement();
-      }
-      $theXmlWriter->endElement();
-    }
-
-
-    // Generate XML for Nodes.
-    if (!empty($this->myChildNodes))
-    {
-      $theXmlWriter->startElement( 'Nodes' );
-      foreach ($this->myChildNodes as $node)
-      {
-        $node->preGenerateXml();
-        $node->generateXml( $theXmlWriter );
       }
       $theXmlWriter->endElement();
     }
@@ -317,22 +218,6 @@ class Node
       }
       $theXmlWriter->endElement();
     }
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * Returns child node with @a $theName. If no child node with @a $theName exists an exception is thrown.
-   *
-   * @param string $theName
-   *
-   * @return null|Node
-   */
-  public function getChildNode( $theName )
-  {
-    $ret = $this->searchChildNode( $theName );
-    if ($ret===null) enk_assert_failed( "Child node with name '%s' doesn't exists.", $theName );
-
-    return $ret;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -530,80 +415,12 @@ class Node
     return $port;
   }
 
-
   //--------------------------------------------------------------------------------------------------------------------
   /**
    * This function be be called before generation XML and is intended to be overloaded.
    */
   public function preGenerateXml()
   {
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * Removes duplicate dependencies and dependencies that are dependencies of predecessors.
-   */
-  public function purge()
-  {
-    foreach ($this->myInputPorts as $port)
-    {
-      $port->purge();
-    }
-
-    foreach ($this->myChildNodes as $node)
-    {
-      $node->purge();
-    }
-
-    foreach ($this->myOutputPorts as $port)
-    {
-      $port->purge();
-    }
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * Removes node @a $theNodeName as a child node. The dependencies of any successor of @a $theNode are been replaced
-   * with all dependencies of @a $theNode.
-   *
-   * @param string $theNodeName
-   */
-  public function removeChildNode( $theNodeName )
-  {
-    $node = null;
-
-    // Find and remove node $theNodeName.
-    foreach ($this->myChildNodes as $i => $tmp)
-    {
-      if ($tmp->myName===$theNodeName)
-      {
-        $node = $tmp;
-        unset($this->myChildNodes[$i]);
-        break;
-      }
-    }
-
-    if (!$node) enk_assert_failed( "Node '%s' doesn't have child node '%s'.", $this->getPath(), $theNodeName );
-
-    // Get all dependencies of the node.
-    $deps = array();
-    foreach ($node->myInputPorts as $port)
-    {
-      foreach ($port->getAllDependencies() as $dep)
-      {
-        $deps[] = $dep;
-      }
-    }
-
-    foreach ($this->myChildNodes as $tmp)
-    {
-      $tmp->replaceNodeDependency( $theNodeName, $deps );
-    }
-
-    foreach ($this->myOutputPorts as $port)
-    {
-      $port->replaceNodeDependency( $theNodeName, $deps );
-    }
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -619,30 +436,6 @@ class Node
     {
       $port->replaceNodeDependency( $theNodeName, $theDependencies );
     }
-  }
-
-  //--------------------------------------------------------------------------------------------------------------------
-  /**
-   * If this node has a child node with name @a $theName that child node will be returned.
-   * If no child node with @a $theName exists, returns null.
-   *
-   * @param string $theName
-   *
-   * @return null|Node
-   */
-  public function searchChildNode( $theName )
-  {
-    $ret = null;
-    foreach ($this->myChildNodes as $node)
-    {
-      if ($node->myName===$theName)
-      {
-        $ret = $node;
-        break;
-      }
-    }
-
-    return $ret;
   }
 
   //--------------------------------------------------------------------------------------------------------------------
@@ -718,37 +511,18 @@ class Node
   }
 
   //--------------------------------------------------------------------------------------------------------------------
-  protected function ensureDependencies()
-  {
-    if ($this->myChildNodes)
-    {
-      $input_port_all = $this->getInputPort( self::ALL_PORT_NAME );
-      // $output_port_all = $this->getOutputPort( self::ALL_PORT_NAME );
+  abstract protected function ensureDependencies();
 
-      foreach ($this->myChildNodes as $node)
-      {
-        $node->ensureDependencies();
-      }
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * @param Port $thePort
+   *
+   * @return bool
+   */
+  abstract protected function hasDependants( $thePort );
 
-      // Ensure that output port 'all' depends on all child nodes.
-      $this->addDependencyAllOutputPorts();
-
-      // Ensure the output port 'all' depends on input port 'all'.
-      // $output_port_all->addDependency( $input_port_all );
-
-      // Ensure input port 'all' of this node depends on output 'all' of each predecessor of this node.
-      foreach ($this->myInputPorts as $input_port)
-      {
-        foreach ($input_port->getAllDependencies() as $port)
-        {
-          if ($port->getNode()!=$this->myParent)
-          {
-            $input_port_all->addDependency( $port->getNode()->getOutputPort( self::ALL_PORT_NAME ) );
-          }
-        }
-      }
-    }
-  }
+  //--------------------------------------------------------------------------------------------------------------------
+  abstract protected function purge();
 
   //--------------------------------------------------------------------------------------------------------------------
 }

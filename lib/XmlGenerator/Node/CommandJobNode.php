@@ -8,7 +8,7 @@ use SetBased\Enarksh\XmlGenerator\Port\Port;
 /**
  * Class for generating XML messages for elements of type 'CommandJobType'.
  */
-class CommandJobNode extends Node
+class CommandJobNode extends SimpleJobNode
 {
   //--------------------------------------------------------------------------------------------------------------------
   /**
@@ -27,11 +27,27 @@ class CommandJobNode extends Node
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * @param \XMLWriter $theXmlWriter
+   * Object constructor.
+   *
+   * @param string $theName The name of the node.
    */
-  public function generateXml( $theXmlWriter )
+  public function __construct( $theName )
   {
-    $theXmlWriter->startElement( 'CommandJob' );
+    parent::__construct( $theName );
+
+    // A command job node has only one input and one output port.
+    $this->makeInputPort( Node::ALL_PORT_NAME );
+    $this->makeOutputPort( Node::ALL_PORT_NAME );
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
+  /**
+   * @param \XMLWriter $theXmlWriter
+   * @param string     $theName
+   */
+  public function generateXml( $theXmlWriter, $theName = 'CommandJob' )
+  {
+    $theXmlWriter->startElement( $theName );
 
     parent::generateXml( $theXmlWriter );
 
